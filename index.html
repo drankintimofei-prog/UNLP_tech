@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UNLP CoachAI</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0f1117;
+      --surface: #1a1d2e;
+      --surface-light: #242840;
+      --gold: #c9a84c;
+      --gold-light: #e8c96a;
+      --text: #f0f0f0;
+      --muted: #9a9ab0;
+      --border: #2e3150;
+      --success: #4caf50;
+      --error: #e53935;
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(circle at top, rgba(201,168,76,0.12), transparent 28%),
+                  linear-gradient(180deg, #0f1117 0%, #0b0d14 100%);
+      color: var(--text);
+    }
+
+    .page {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 24px 48px;
+    }
+
+    header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 12px;
+      margin-bottom: 36px;
+    }
+
+    .logo {
+      font-size: 0.72rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-weight: 700;
+      background: rgba(201,168,76,0.1);
+      border: 1px solid rgba(201,168,76,0.25);
+      padding: 4px 12px;
+      border-radius: 999px;
+    }
+
+    .hero {
+      max-width: 100%;
+    }
+
+    .hero h1 {
+      margin: 0 0 10px;
+      font-size: clamp(2.4rem, 5vw, 3.8rem);
+      line-height: 1.05;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.02em;
+    }
+
+    .hero p {
+      display: inline-block;
+      margin: 0;
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--gold);
+      background: rgba(201,168,76,0.12);
+      border: 1px solid rgba(201,168,76,0.35);
+      padding: 6px 18px;
+      border-radius: 999px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      padding: 28px;
+      margin-top: 24px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+    }
+
+    .dropzone {
+      border: 2px dashed var(--border);
+      border-radius: 24px;
+      padding: 34px;
+      text-align: center;
+      transition: border-color 0.2s ease, background 0.2s ease;
+      background: rgba(255,255,255,0.015);
+      cursor: pointer;
+    }
+
+    .dropzone.hover {
+      border-color: var(--gold);
+      background: rgba(201,168,76,0.07);
+    }
+
+    .dropzone h2 {
+      margin: 0 0 12px;
+      font-size: 1.35rem;
+      color: #fff;
+    }
+
+    .dropzone p {
+      margin: 6px 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .warning-box {
+      background: rgba(245,191,0,0.1);
+      border: 1px solid rgba(245,191,0,0.3);
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin: 16px 0;
+      color: #ffe89c;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .details {
+      margin-top: 18px;
+      color: var(--text);
+      font-size: 0.95rem;
+    }
+
+    .button {
+      margin-top: 22px;
+      width: 100%;
+      border: none;
+      border-radius: 14px;
+      padding: 16px 20px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--gold), var(--gold-light));
+      color: #111;
+      transition: transform 0.2s ease, opacity 0.2s ease;
+    }
+
+    .button:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .status-card {
+      background: var(--surface-light);
+      border: 1px solid rgba(255,255,255,0.06);
+      padding: 26px;
+      margin-top: 28px;
+      border-radius: 24px;
+    }
+
+    .stage-list {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 20px;
+    }
+
+    .stage-item {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .stage-item:last-child {
+      border-bottom: none;
+    }
+
+    .badge {
+      width: 36px;
+      height: 36px;
+      flex-shrink: 0;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,0.04);
+      border: 2px solid var(--border);
+      font-size: 0.85rem;
+      color: var(--muted);
+      transition: border-color 0.3s, background 0.3s, color 0.3s;
+    }
+
+    .badge.done {
+      background: rgba(201,168,76,0.15);
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+
+    .badge.active {
+      border-color: var(--gold);
+      border-top-color: transparent;
+      animation: badge-spin 0.8s linear infinite;
+    }
+
+    @keyframes badge-spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .stage-item-text strong {
+      display: block;
+      color: #fff;
+      font-size: 0.95rem;
+      margin-bottom: 2px;
+    }
+
+    .stage-item-text span {
+      color: var(--muted);
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+
+    .progress-wrap {
+      background: #111;
+      border-radius: 999px;
+      overflow: hidden;
+      height: 14px;
+      margin: 16px 0 12px;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--gold), var(--gold-light));
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .report {
+      display: none;
+      gap: 24px;
+      margin-top: 24px;
+    }
+
+    .report.active {
+      display: grid;
+    }
+
+    .report-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 24px;
+    }
+
+    .report-card h3 {
+      margin-top: 0;
+      color: var(--gold);
+    }
+
+    .report-grid {
+      display: grid;
+      gap: 18px;
+    }
+
+    .competency {
+      border: 1px solid var(--border);
+      padding: 18px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.02);
+    }
+
+    .rating {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-top: 10px;
+    }
+
+    /* EMCC level color grading — red → yellow → blue → green */
+    .rating.Foundation {
+      background: rgba(229,57,53,0.15);
+      color: #ffb4b0;
+      border: 1px solid rgba(229,57,53,0.35);
+    }
+    .rating.Practitioner {
+      background: rgba(245,191,0,0.15);
+      color: #ffe89c;
+      border: 1px solid rgba(245,191,0,0.35);
+    }
+    .rating.SeniorPractitioner {
+      background: rgba(66,133,244,0.16);
+      color: #b3d4ff;
+      border: 1px solid rgba(66,133,244,0.35);
+    }
+    .rating.MasterPractitioner {
+      background: rgba(76,175,80,0.15);
+      color: #a9f5b1;
+      border: 1px solid rgba(76,175,80,0.35);
+    }
+    .rating.NoViolationDetected {
+      background: rgba(255,255,255,0.06);
+      color: var(--muted);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .rating.NeedsAttention {
+      background: rgba(229,57,53,0.16);
+      color: #ffb4b0;
+      border: 1px solid rgba(229,57,53,0.3);
+    }
+
+    .notes {
+      color: var(--muted);
+      margin-top: 10px;
+      line-height: 1.6;
+    }
+
+    .tip-box {
+      background: rgba(201,168,76,0.06);
+      border-left: 3px solid var(--gold);
+      border-radius: 0 10px 10px 0;
+      padding: 10px 14px;
+      margin-top: 14px;
+    }
+
+    .tip-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 5px;
+    }
+
+    .tip-box p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 18px;
+    }
+
+    .list-item {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 10px;
+      color: #fff;
+      line-height: 1.7;
+    }
+
+    .list-item::before {
+      content: '•';
+      color: var(--gold);
+      margin-left: -10px;
+    }
+
+    .summary {
+      border-left: 4px solid var(--gold);
+      padding-left: 18px;
+      color: var(--text);
+      line-height: 1.8;
+    }
+
+    .small-text {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    .download-button {
+      border: 1px solid rgba(201,168,76,0.4);
+      background: transparent;
+      color: var(--gold);
+      padding: 12px 18px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: background 0.2s ease;
+    }
+
+    .download-button:hover {
+      background: rgba(201,168,76,0.12);
+    }
+
+    .error-alert {
+      margin-top: 20px;
+      padding: 16px;
+      background: rgba(229,57,53,0.12);
+      border: 1px solid rgba(229,57,53,0.3);
+      border-radius: 18px;
+      color: #ffb4b0;
+    }
+
+    .resume-notification {
+      margin-bottom: 20px;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div class="hero">
+        <h1>Analyze your coaching session</h1>
+        <p>Powered by UNLP CoachAI</p>
+      </div>
+    </header>
+
+    <section class="card">
+      <div id="dropzone" class="dropzone" tabindex="0">
+        <h2>Drag your file here</h2>
+        <p>or click to select a video or audio file (.mov, .mp4, .mkv, .avi, .wav, .mp3)</p>
+        <p class="small-text">Maximum file size: 5GB</p>
+        <div class="warning-box">
+          <strong>⚠️ Note:</strong> Processing may take a few minutes depending on file length.
+        </div>
+        <input id="fileInput" type="file" accept="video/*,audio/*,.mp4,.mov,.mkv,.avi,.wav,.mp3,.m4a" style="display:none" />
+        <div id="fileDetails" class="details"></div>
+      </div>
+
+      <button id="startButton" class="button" disabled>Start</button>
+      <div id="errorMessage" class="error-alert" style="display:none"></div>
+    </section>
+
+    <section id="statusSection" class="status-card" style="display:none">
+      <ul class="stage-list">
+        <li class="stage-item"><span class="badge" id="icon-upload"></span><div class="stage-item-text"><strong>Upload file</strong><span id="message-upload">Waiting for upload...</span></div></li>
+        <li class="stage-item"><span class="badge" id="icon-extract"></span><div class="stage-item-text"><strong>Extract audio</strong><span id="message-extract">Waiting...</span></div></li>
+        <li class="stage-item"><span class="badge" id="icon-transcribe"></span><div class="stage-item-text"><strong>Transcribe session</strong><span id="message-transcribe">Waiting...</span></div></li>
+        <li class="stage-item"><span class="badge" id="icon-evaluate"></span><div class="stage-item-text"><strong>Generate EMCC evaluation</strong><span id="message-evaluate">Waiting...</span></div></li>
+      </ul>
+      <div class="progress-wrap"><div id="progressBar" class="progress-bar"></div></div>
+      <div class="small-text" id="statusSummary">This may take a few minutes depending on the length of the recording.</div>
+    </section>
+
+    <section id="reportSection" class="report"></section>
+  </div>
+
+  <script>
+    console.log('Script loaded');
+
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('fileInput');
+    const fileDetails = document.getElementById('fileDetails');
+    const startButton = document.getElementById('startButton');
+    const errorMessage = document.getElementById('errorMessage');
+    const statusSection = document.getElementById('statusSection');
+    const reportSection = document.getElementById('reportSection');
+    const progressBar = document.getElementById('progressBar');
+    const statusSummary = document.getElementById('statusSummary');
+
+    console.log('Elements found:', { dropzone, fileInput, startButton });
+
+    let selectedFile = null;
+    let startTime = null;
+    let currentJobId = null;
+
+    // Check for saved job on page load
+    window.addEventListener('load', () => {
+      const savedJob = localStorage.getItem('coachAI_job');
+      if (savedJob) {
+        const jobData = JSON.parse(savedJob);
+        if (jobData.fileName && jobData.jobId) {
+          // Resume previous job
+          showResumeOption(jobData);
+        }
+      }
+    });
+
+    function showResumeOption(jobData) {
+      const resumeDiv = document.createElement('div');
+      resumeDiv.className = 'resume-notification';
+      resumeDiv.innerHTML = `
+        <div style="background: rgba(76,175,80,0.1); border: 1px solid rgba(76,175,80,0.3); border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+          <strong>📋 Resume previous analysis:</strong> ${jobData.fileName}<br>
+          <small>Started on ${new Date(jobData.startTime).toLocaleString('en-US')}</small>
+          <br><br>
+          <button class="download-button" onclick="resumeJob('${jobData.jobId}')">Resume</button>
+          <button class="download-button" style="margin-left: 10px;" onclick="clearSavedJob()">Remove</button>
+        </div>
+      `;
+      dropzone.parentNode.insertBefore(resumeDiv, dropzone);
+    }
+
+    function resumeJob(jobId) {
+      // In a real implementation, this would check job status from backend
+      alert('Resume functionality would retrieve job status from the backend here.');
+    }
+
+    function clearSavedJob() {
+      localStorage.removeItem('coachAI_job');
+      location.reload();
+    }
+
+    function saveJobProgress(jobId, fileName) {
+      const jobData = {
+        jobId: jobId,
+        fileName: fileName,
+        startTime: new Date().toISOString()
+      };
+      localStorage.setItem('coachAI_job', JSON.stringify(jobData));
+      currentJobId = jobId;
+    }
+
+    function clearJobProgress() {
+      localStorage.removeItem('coachAI_job');
+      currentJobId = null;
+    }
+
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    function getTimeEstimate(stage, progress) {
+      if (stage === 'uploading') return '~10 sec';
+      if (stage === 'extracting') return '~15-30 sec';
+      if (stage === 'transcribing') return '~30-90 sec';
+      if (stage === 'evaluating') return '~10-30 sec';
+      return '';
+    }
+
+    function formatBytes(bytes) {
+      const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+      let index = 0;
+      while (bytes >= 1024 && index < units.length - 1) {
+        bytes /= 1024;
+        index += 1;
+      }
+      return `${bytes.toFixed(1)} ${units[index]}`;
+    }
+
+    function setError(message) {
+      errorMessage.style.display = 'block';
+      errorMessage.textContent = message;
+    }
+
+    function clearError() {
+      errorMessage.style.display = 'none';
+      errorMessage.textContent = '';
+    }
+
+    function setBadge(id, state) {
+      const el = document.getElementById(id);
+      el.className = 'badge';
+      el.textContent = '';
+      if (state === 'done') {
+        el.classList.add('done');
+        el.textContent = '✓';
+      } else if (state === 'active') {
+        el.classList.add('active');
+      }
+    }
+
+    function resetUI() {
+      statusSection.style.display = 'none';
+      reportSection.classList.remove('active');
+      reportSection.innerHTML = '';
+      progressBar.style.width = '0%';
+      statusSummary.textContent = 'This may take a few minutes depending on the recording.';
+      document.getElementById('message-upload').textContent = 'Waiting for upload...';
+      document.getElementById('message-extract').textContent = 'Waiting...';
+      document.getElementById('message-transcribe').textContent = 'Waiting...';
+      document.getElementById('message-evaluate').textContent = 'Waiting...';
+      setBadge('icon-upload', 'pending');
+      setBadge('icon-extract', 'pending');
+      setBadge('icon-transcribe', 'pending');
+      setBadge('icon-evaluate', 'pending');
+    }
+
+    function updateStage(stage, message, progress) {
+      statusSection.style.display = 'block';
+      if (progress !== undefined) {
+        progressBar.style.width = `${progress}%`;
+      }
+
+      const timeEstimate = getTimeEstimate(stage, progress);
+      const timeText = timeEstimate ? ` (${timeEstimate})` : '';
+
+      setBadge('icon-upload', 'pending');
+      setBadge('icon-extract', 'pending');
+      setBadge('icon-transcribe', 'pending');
+      setBadge('icon-evaluate', 'pending');
+
+      if (stage === 'uploading') {
+        document.getElementById('message-upload').textContent = message + timeText;
+        setBadge('icon-upload', 'active');
+        statusSummary.textContent = 'Uploading your file...';
+      }
+      if (stage === 'extracting') {
+        setBadge('icon-upload', 'done');
+        document.getElementById('message-extract').textContent = message + timeText;
+        setBadge('icon-extract', 'active');
+        statusSummary.textContent = 'Extracting audio from the file...';
+      }
+      if (stage === 'transcribing') {
+        setBadge('icon-upload', 'done');
+        setBadge('icon-extract', 'done');
+        document.getElementById('message-transcribe').textContent = message + timeText;
+        setBadge('icon-transcribe', 'active');
+        statusSummary.textContent = 'Transcribing the session...';
+      }
+      if (stage === 'evaluating') {
+        setBadge('icon-upload', 'done');
+        setBadge('icon-extract', 'done');
+        setBadge('icon-transcribe', 'done');
+        document.getElementById('message-evaluate').textContent = message + timeText;
+        setBadge('icon-evaluate', 'active');
+        statusSummary.textContent = 'Generating the EMCC evaluation...';
+      }
+      if (stage === 'complete') {
+        setBadge('icon-upload', 'done');
+        setBadge('icon-extract', 'done');
+        setBadge('icon-transcribe', 'done');
+        setBadge('icon-evaluate', 'done');
+        statusSummary.textContent = 'Evaluation complete.';
+        clearJobProgress();
+      }
+      if (stage === 'error') {
+        setError(message || 'An unexpected error occurred. Please try again.');
+        statusSummary.textContent = 'Processing stopped due to error.';
+        clearJobProgress();
+      }
+    }
+
+    function generateFullReportText(report) {
+      let text = `COACHING EVALUATION REPORT\n`;
+      text += `Generated: ${new Date().toLocaleString('en-US')}\n\n`;
+
+      text += `SESSION OVERVIEW\n`;
+      text += `${report.session_overview || 'No overview available.'}\n\n`;
+
+      text += `EMCC LEVEL: ${report.emcc_level || 'Not available'}\n\n`;
+
+      text += `EMCC COMPETENCE EVALUATION\n`;
+      (report.emcc_alignment || []).forEach(item => {
+        const rating = item.rating || item.level || 'Not rated';
+        const confidence = item.confidence || 'Unknown';
+        text += `\n${item.competency}\n`;
+        text += `Rating: ${rating}\n`;
+        text += `Confidence: ${confidence}\n`;
+        text += `Evidence: ${item.evidence || 'No evidence provided.'}\n`;
+        text += `Notes: ${item.notes || 'No notes provided.'}\n`;
+      });
+
+      text += `\nSTRENGTHS\n`;
+      (report.strengths || []).forEach(strength => {
+        text += `• ${strength}\n`;
+      });
+
+      text += `\nDEVELOPMENT AREAS\n`;
+      (report.development_areas || []).forEach(area => {
+        text += `• ${area}\n`;
+      });
+
+      text += `\nOVERALL JUDGMENT\n`;
+      text += `${report.overall_judgment || 'No overall judgment available.'}\n`;
+
+      return text;
+    }
+
+    function getCompleteSentencePreview(text, limit) {
+      if (text.length <= limit) {
+        return text;
+      }
+      const snippet = text.slice(0, limit);
+      const lastPeriod = Math.max(snippet.lastIndexOf('.'), snippet.lastIndexOf('!'), snippet.lastIndexOf('?'));
+      if (lastPeriod > 0) {
+        return snippet.slice(0, lastPeriod + 1);
+      }
+      return snippet;
+    }
+
+    function createReport(report) {
+      console.log('FULL REPORT:', JSON.stringify(report, null, 2));
+      const wrapper = document.createElement('div');
+      wrapper.style.cssText = 'display:flex;flex-direction:column;gap:20px;';
+
+      const fullReportText = generateFullReportText(report);
+
+      // 1. Title header (no border card — pure centered title block)
+      const header = document.createElement('div');
+      header.className = 'report-card center';
+      header.innerHTML = `
+        <h2 style="margin:0 0 8px;font-size:2rem;font-weight:800;color:#fff;letter-spacing:-0.5px;">Coaching Evaluation Report</h2>
+        <div style="width:56px;height:3px;background:linear-gradient(90deg,var(--gold),var(--gold-light));border-radius:2px;margin:0 auto 14px;"></div>
+        <p class="small-text" style="margin:0 0 16px;">Generated ${new Date().toLocaleString('en-US')}</p>
+        <button class="download-button" onclick="window.print()">Print</button>
+      `;
+      wrapper.appendChild(header);
+
+      // 2. Preview — same font as page
+      const previewText = getCompleteSentencePreview(fullReportText, 500);
+      const preview = document.createElement('div');
+      preview.className = 'report-card';
+      preview.innerHTML = `<h3 style="margin-top:0;">Preview</h3><pre style="white-space:pre-wrap;font-family:inherit;font-size:0.92rem;line-height:1.7;margin:0;">${previewText}</pre>`;
+      wrapper.appendChild(preview);
+
+      // 3. Session Overview
+      const overview = document.createElement('div');
+      overview.className = 'report-card';
+      overview.innerHTML = `<h3 style="margin-top:0;">Session Overview</h3><p style="margin:0;line-height:1.8;">${report.session_overview || 'No overview available.'}</p>`;
+      wrapper.appendChild(overview);
+
+      // 4. EMCC Level — single unified line
+      const levelCard = document.createElement('div');
+      levelCard.className = 'report-card center';
+      const levelValue = report.emcc_level || 'Not available';
+      levelCard.innerHTML = `
+        <div style="font-size:0.72rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">Overall Assessment</div>
+        <div style="font-size:1.7rem;font-weight:800;color:var(--gold);letter-spacing:0.04em;">EMCC LEVEL : ${levelValue}</div>
+      `;
+      wrapper.appendChild(levelCard);
+
+      // 5. Competency grid
+      const compCard = document.createElement('div');
+      compCard.className = 'report-card';
+      compCard.innerHTML = '<h3 style="margin-top:0;margin-bottom:16px;">EMCC Competency Assessment</h3>';
+      const grid = document.createElement('div');
+      grid.className = 'report-grid';
+      (report.emcc_alignment || []).forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'competency';
+        const ratingText = item.rating || item.level || 'Not rated';
+        const confidenceText = item.confidence || 'Unknown';
+        const ratingClass = ratingText === 'Needs Attention' ? 'NeedsAttention' : ratingText.replace(/\s+/g, '');
+        card.innerHTML = `
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px;">
+            <h3 style="margin:0;font-size:1rem;line-height:1.4;">${item.competency}</h3>
+            <div class="rating ${ratingClass}" style="white-space:nowrap;flex-shrink:0;margin-top:0;">Level: ${ratingText}</div>
+          </div>
+          <div class="small-text" style="margin-bottom:10px;">Confidence: ${confidenceText}</div>
+          <p style="margin:0;font-style:italic;line-height:1.65;">${item.evidence || 'No evidence available.'}</p>
+          ${item.notes ? `<div class="tip-box"><div class="tip-label">Tip for Improvement</div><p>${item.notes}</p></div>` : ''}
+        `;
+        grid.appendChild(card);
+      });
+      compCard.appendChild(grid);
+      wrapper.appendChild(compCard);
+
+      // 6 & 7. Strengths + Development Areas — side by side
+      const twoCol = document.createElement('div');
+      twoCol.style.cssText = 'display:flex;gap:20px;';
+
+      const strengths = document.createElement('div');
+      strengths.className = 'report-card';
+      strengths.style.flex = '1';
+      strengths.innerHTML = `<h3 style="margin-top:0;">Strengths</h3><div>${(report.strengths || []).map(text => `<div class="list-item">${text}</div>`).join('')}</div>`;
+      twoCol.appendChild(strengths);
+
+      const development = document.createElement('div');
+      development.className = 'report-card';
+      development.style.flex = '1';
+      development.innerHTML = `<h3 style="margin-top:0;">Development Areas</h3><div>${(report.development_areas || []).map(text => `<div class="list-item">${text}</div>`).join('')}</div>`;
+      twoCol.appendChild(development);
+
+      wrapper.appendChild(twoCol);
+
+      // 8. Final Conclusion — prominently styled
+      const summary = document.createElement('div');
+      summary.className = 'report-card';
+      summary.style.cssText = 'border-color:var(--gold);border-width:2px;background:linear-gradient(135deg,rgba(201,168,76,0.08),rgba(201,168,76,0.02));';
+      summary.innerHTML = `
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+          <div style="width:4px;height:36px;background:linear-gradient(180deg,var(--gold),var(--gold-light));border-radius:2px;flex-shrink:0;"></div>
+          <h3 style="margin:0;font-size:1.25rem;font-weight:800;color:#fff;letter-spacing:-0.01em;">Final Conclusion</h3>
+        </div>
+        <p style="margin:0;line-height:1.85;font-size:0.98rem;">${report.overall_judgment || 'No overall judgment available.'}</p>
+      `;
+      wrapper.appendChild(summary);
+
+      return wrapper;
+    }
+
+    function renderReport(report) {
+      reportSection.innerHTML = '';
+      reportSection.appendChild(createReport(report));
+      reportSection.classList.add('active');
+    }
+
+    function handleFile(file) {
+      // File size validation (5GB limit)
+      const maxSize = 5 * 1024 * 1024 * 1024; // 5GB in bytes
+      if (file.size > maxSize) {
+        setError('File is too large. Maximum size is 5GB.');
+        startButton.disabled = true;
+        return;
+      }
+
+      // File type validation - very flexible approach
+      const allowedExtensions = ['.mp4', '.mov', '.mkv', '.avi', '.wav', '.mp3', '.m4a', '.webm', '.flv', '.wmv'];
+      const fileName = file.name.toLowerCase();
+      const fileExtension = fileName.substring(fileName.lastIndexOf('.'));
+      const hasValidExtension = allowedExtensions.includes(fileExtension);
+
+      const allowedMimePrefixes = ['video/', 'audio/'];
+      const hasValidMimeType = allowedMimePrefixes.some(prefix => file.type.startsWith(prefix));
+
+      if (!hasValidExtension && !hasValidMimeType) {
+        const ext = file.name.includes('.') ? file.name.split('.').pop().toUpperCase() : 'this format';
+        setError(`Unsupported file type (.${ext.toLowerCase()}). Please upload a video or audio file — .mp4, .mov, .mkv, .avi, .wav, or .mp3.`);
+        startButton.disabled = true;
+        return;
+      }
+
+      selectedFile = file;
+      const details = `File: ${file.name} · ${formatBytes(file.size)}`;
+      fileDetails.textContent = details;
+      startButton.disabled = false;
+      clearError();
+    }
+
+    dropzone.addEventListener('click', () => {
+      console.log('Dropzone clicked');
+      fileInput.click();
+    });
+
+    fileInput.addEventListener('change', (event) => {
+      console.log('File input changed', event.target.files);
+      if (event.target.files.length) {
+        handleFile(event.target.files[0]);
+      }
+    });
+
+    dropzone.addEventListener('dragover', (event) => {
+      console.log('Drag over event fired');
+      event.preventDefault();
+      event.stopPropagation();
+      dropzone.classList.add('hover');
+      return false;
+    });
+
+    dropzone.addEventListener('dragleave', (event) => {
+      console.log('Drag leave event fired');
+      event.preventDefault();
+      event.stopPropagation();
+      dropzone.classList.remove('hover');
+      return false;
+    });
+
+    dropzone.addEventListener('drop', (event) => {
+      console.log('Drop event fired', event.dataTransfer.files);
+      event.preventDefault();
+      event.stopPropagation();
+      dropzone.classList.remove('hover');
+      
+      const files = event.dataTransfer.files;
+      if (files.length > 0) {
+        console.log('Processing dropped file:', files[0]);
+        handleFile(files[0]);
+      }
+      return false;
+    });
+
+    startButton.addEventListener('click', async () => {
+      if (!selectedFile) {
+        setError('Please select a file first.');
+        return;
+      }
+
+      // Set start time for time tracking
+      startTime = Date.now();
+
+      resetUI();
+      clearError();
+      startButton.disabled = true;
+
+      // Save job progress (in a real implementation, we'd get a job ID from backend)
+      saveJobProgress(`job_${Date.now()}`, selectedFile.name);
+
+      try {
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+
+        const response = await fetch('http://localhost:8000/api/v1/process', { method: 'POST', body: formData });
+        if (!response.ok) {
+          throw new Error(`Server error: ${response.status}`);
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop();
+
+          for (const line of lines) {
+            if (!line.startsWith('data: ')) continue;
+            try {
+                const payload = JSON.parse(line.slice(6)); // slice(6) is cleaner than replace
+                updateStage(payload.stage, payload.message, payload.progress);
+                if (payload.stage === 'complete') {
+                renderReport(payload.report);
+                statusSummary.textContent = 'Evaluation complete! You can download the report.';
+                clearJobProgress();
+                }
+                if (payload.stage === 'error') {
+                throw new Error(payload.message || 'An error occurred.');
+                }
+            } catch(e) {
+                console.log('Parse error on line:', line.substring(0, 100), e.message);
+            }
+            }
+        }
+      } catch (error) {
+        console.error('Upload error:', error);
+        let errorMessage = 'Something went wrong while uploading.';
+
+        if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError') || error.message.includes('ERR_NETWORK')) {
+          errorMessage = 'Network error. Check your connection and try again.';
+        } else if (error.message.includes('File too large') || error.message.includes('413') || error.message.includes('groot')) {
+          errorMessage = 'File is too large. Maximum size is 5GB.';
+        } else if (error.message.includes('Unsupported file type') || error.message.includes('415') || error.message.includes('format')) {
+          errorMessage = 'Invalid file type. Please upload a video or audio file.';
+        } else if (error.message.includes('timeout') || error.message.includes('TimeoutError')) {
+          errorMessage = 'Processing timed out. Try a shorter file.';
+        } else if (error.message.includes('Server error') || error.message.includes('500')) {
+          errorMessage = 'Server error. Please try again later.';
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+
+        setError(errorMessage);
+        clearJobProgress();
+      } finally {
+        startButton.disabled = false;
+      }
+    });
+
+    resetUI();
+    console.log('Script initialized');
+  </script>
+</body>
+</html>
