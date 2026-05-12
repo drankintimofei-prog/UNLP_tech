@@ -6,7 +6,7 @@ from pathlib import Path
 
 from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -389,6 +389,11 @@ def format_sse(data: dict) -> str:
 
 
 @app.get("/")
+def serve_frontend():
+    return FileResponse("index.html", media_type="text/html")
+
+
+@app.get("/health")
 def health_check():
     return {"status": "healthy", "service": "Coach AI API", "version": "1.0.0"}
 

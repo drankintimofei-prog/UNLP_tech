@@ -893,7 +893,7 @@
         const formData = new FormData();
         formData.append('file', selectedFile);
 
-        const response = await fetch('http://localhost:8000/api/v1/process', { method: 'POST', body: formData });
+        const response = await fetch('/api/v1/process', { method: 'POST', body: formData });
         if (!response.ok) {
           throw new Error(`Server error: ${response.status}`);
         }
