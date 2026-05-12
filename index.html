@@ -885,6 +885,7 @@
       resetUI();
       clearError();
       startButton.disabled = true;
+      updateStage('uploading', 'Uploading file...', 15);
 
       // Save job progress (in a real implementation, we'd get a job ID from backend)
       saveJobProgress(`job_${Date.now()}`, selectedFile.name);
